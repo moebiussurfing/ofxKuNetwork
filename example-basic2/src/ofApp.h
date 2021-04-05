@@ -5,6 +5,10 @@
 
 class ofApp : public ofBaseApp {
 
+	// push a key to
+	// create a random string and to send-it.
+	// receive the string and log.
+
 public:
 	void setup();
 	void update();

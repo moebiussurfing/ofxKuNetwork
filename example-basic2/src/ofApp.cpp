@@ -24,7 +24,6 @@ void ofApp::update() {
 
 //--------------------------------------------------------------
 void ofApp::draw() {
-	ofBackground(64);
 	ofDrawBitmapStringHighlight(str, 20, 30);
 }
 
@@ -36,7 +35,7 @@ void ofApp::keyPressed(int key) {
 
 	// fill 
 	const int amnt = 800;
-	s = "myString_{\n\n" + ofToString(ofGetFrameNum());
+	s = "myString_\n{\n\n" + ofToString(ofGetFrameNum());
 	for (int i = 0; i < amnt; i++)
 	{
 		if (i < 128) s += ofToString((unsigned char)(i % 255));
