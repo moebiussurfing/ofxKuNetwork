@@ -246,6 +246,33 @@ void ofxKuNetworkTcpClient::putPixels(const ofPixels &pix) {
 	putU8Array(pix.getPixels(), n);
 }
 
+//-------------------------------------------------------------------
+void ofxKuNetworkTcpClient::putString(const std::string &s)
+{
+	if (!dataPushing()) return;
+	
+	string temp = s;
+	char * tab2 = new char[temp.length() + 1];
+	strcpy(tab2, temp.c_str());
+	int n = temp.length();
+	//int n = sizeof(tab2);
+
+	ofLogNotice(__FUNCTION__) << s;
+	//ofLogNotice(__FUNCTION__) << ofToString(buffer_);
+
+	//int m = buffer_.size();
+	//buffer_.resize(m + n);
+	//for (int i = 0; i < n; i++) {
+	//	buffer_[m + i] = tab2[i];
+	//}
+
+
+	for (int i = 0; i < n; i++) {
+		unsigned char value = tab2[i];
+		putU8Array((unsigned char*)&value, sizeof(value));
+		ofLogNotice(__FUNCTION__) << ofToString(value);
+	}
+}
 
 //-------------------------------------------------------------------
 void ofxKuNetworkTcpClient::send() {
@@ -299,7 +326,8 @@ void ofxKuNetworkTcpServer::setup( int port, int packetSize, bool threaded, int 
 		startTCP();
 
 		if ( _threaded ) {
-			startThread( true, false );   //blocking, verbose
+			//startThread( true, false );   //blocking, verbose
+			startThread();
 		}
 	}
 }
@@ -592,3 +620,17 @@ ofPixels ofxKuNetworkTcpServer::getPixels() {
 }
 
 //-------------------------------------------------------------------
+std::string ofxKuNetworkTcpServer::getString() {
+
+	std::string s0;
+	if (!parsing()) return s0;
+
+	unsigned char *tab2;
+	int m = buffer_.size();
+	reader_.getU8Array(tab2, m);
+	
+	std::string ss(reinterpret_cast<char*>(tab2));
+	ofLogNotice(__FUNCTION__) << ofToString(ss);
+
+	return ss;
+}

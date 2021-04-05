@@ -31,6 +31,7 @@ public:
 	void putFloatVector(const vector<float> &v);
 	void putU8Vector(const vector<unsigned char> &v);
 	void putPixels(const ofPixels &pix);
+	void putString(const std::string &s);
 	void send();
 
 	bool send( unsigned char *data, int dataSize, int frameNumber );
@@ -84,6 +85,7 @@ public:
 	bool getFloatVector(vector<float> &v);
 	bool getU8Vector(vector<unsigned char> &v);
 	ofPixels getPixels();
+	std::string getString();
 	
 	int frame() { return _frame; }		//id of last received data
 	int size()  { return _size; }		//size of last received data
