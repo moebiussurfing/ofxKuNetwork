@@ -11,43 +11,43 @@ struct ofxKuNetwork_PacketHeader {
 	bool valid;
 	int frame, size, src32;
 
-	char buffer[ ofxKuNetwork_PacketHeaderSize ];
+	char buffer[ofxKuNetwork_PacketHeaderSize];
 	int bufferSize;
-	void setup( int frame0, int size0, int src320, bool fillBuffer )
+	void setup(int frame0, int size0, int src320, bool fillBuffer)
 	{
 		valid = true;
 		frame = frame0;
 		size = size0;
 		src32 = src320;
-		if ( fillBuffer ) {
+		if (fillBuffer) {
 			//Filling buffer
-			int k=0;
-			memcpy( buffer + k, &ofxKuNetwork_PacketMarker[0], ofxKuNetwork_PacketMarkerSize );
+			int k = 0;
+			memcpy(buffer + k, &ofxKuNetwork_PacketMarker[0], ofxKuNetwork_PacketMarkerSize);
 			k += ofxKuNetwork_PacketMarkerSize;
-			memcpy( buffer + k, &frame, 4 );
-			k+=4;
-			memcpy( buffer + k, &size, 4 );
-			k+=4;
-			memcpy( buffer + k, &src32, 4 );
-			k+=4;
+			memcpy(buffer + k, &frame, 4);
+			k += 4;
+			memcpy(buffer + k, &size, 4);
+			k += 4;
+			memcpy(buffer + k, &src32, 4);
+			k += 4;
 
 			bufferSize = ofxKuNetwork_PacketHeaderSize;
 		}
 	}
 
 	//Searching and parsing header
-	int findHeader( char *data, int len ) {
-		for (int k=0; k<len - ofxKuNetwork_PacketHeaderSize; k++) {
-			if ( data[k] == ofxKuNetwork_PacketMarker[0] ) {
+	int findHeader(char *data, int len) {
+		for (int k = 0; k < len - ofxKuNetwork_PacketHeaderSize; k++) {
+			if (data[k] == ofxKuNetwork_PacketMarker[0]) {
 				bool ok = true;
-				for (int i=1; i<ofxKuNetwork_PacketMarkerSize; i++) {
-					if ( data[k+i] != ofxKuNetwork_PacketMarker[i] ) {
+				for (int i = 1; i < ofxKuNetwork_PacketMarkerSize; i++) {
+					if (data[k + i] != ofxKuNetwork_PacketMarker[i]) {
 						ok = false;
 						break;
 					}
 				}
-				if ( ok ) {	ok = parse( data + k ); }
-				if ( ok ) {
+				if (ok) { ok = parse(data + k); }
+				if (ok) {
 					return k;
 				}
 			}
@@ -56,18 +56,18 @@ struct ofxKuNetwork_PacketHeader {
 	}
 
 private:
-	bool parse( char *data )	//It is suggested here that size of data is enough for parsing
+	bool parse(char *data)	//It is suggested here that size of data is enough for parsing
 	{
-		int k=0;
-		memcpy( buffer + k, &data + k, ofxKuNetwork_PacketMarkerSize );
+		int k = 0;
+		memcpy(buffer + k, &data + k, ofxKuNetwork_PacketMarkerSize);
 		k += ofxKuNetwork_PacketMarkerSize;
-		memcpy( &frame, data + k, 4 );
-		k+=4;
-		memcpy( &size, data + k, 4 );
-		k+=4;
-		memcpy( &src32, data + k, 4 );
-		k+=4;
-		return ( frame >= 0 && size >= 0 && size < 10000000 && src32 >= 0 );	//TODO Parameter "10000000" 
+		memcpy(&frame, data + k, 4);
+		k += 4;
+		memcpy(&size, data + k, 4);
+		k += 4;
+		memcpy(&src32, data + k, 4);
+		k += 4;
+		return (frame >= 0 && size >= 0 && size < 10000000 && src32 >= 0);	//TODO Parameter "10000000" 
 	}
 };
 
@@ -83,7 +83,7 @@ ofxKuNetworkTcpClient::~ofxKuNetworkTcpClient() {
 }
 
 //-------------------------------------------------------------------
-void ofxKuNetworkTcpClient::setup( const string &addr, int port, int packetSize, bool enabled )
+void ofxKuNetworkTcpClient::setup(const string &addr, int port, int packetSize, bool enabled)
 {
 	enabled_ = enabled;
 
@@ -92,8 +92,8 @@ void ofxKuNetworkTcpClient::setup( const string &addr, int port, int packetSize,
 	_packetSize = packetSize;
 
 	if (enabled_) {
-		tcpClient.TCPClientRef().SetTimeoutSend( 1 );	//TODO Parameter "1" - wait for send timeout
-		tcpClient.TCPClientRef().SetTimeoutAccept( 1 );	//TODO Parameter
+		tcpClient.TCPClientRef().SetTimeoutSend(1);	//TODO Parameter "1" - wait for send timeout
+		tcpClient.TCPClientRef().SetTimeoutAccept(1);	//TODO Parameter
 	}
 	reconnect();
 
@@ -104,7 +104,7 @@ void ofxKuNetworkTcpClient::setup( const string &addr, int port, int packetSize,
 void ofxKuNetworkTcpClient::close()
 {
 	if (!enabled_) return;
-	if ( connected() ) {
+	if (connected()) {
 		tcpClient.close();
 	}
 }
@@ -115,9 +115,9 @@ void ofxKuNetworkTcpClient::reconnect()
 	if (!enabled_) return;
 	cout << "Reconnect sender " << _addr << ", port " << _port << endl;
 	bool blocking = true;
-	_connected = tcpClient.setup( _addr, _port, blocking);		
+	_connected = tcpClient.setup(_addr, _port, blocking);
 	_connectTime = ofGetElapsedTimef();
-	if ( _connected ) { cout << " ok" << endl; }
+	if (_connected) { cout << " ok" << endl; }
 	else { cout << " failed" << endl; }
 }
 
@@ -126,38 +126,38 @@ void ofxKuNetworkTcpClient::update()
 {
 	if (!enabled_) return;
 	//Reconnecting
-	if ( !connected() ) {			
+	if (!connected()) {
 		float deltaTime = ofGetElapsedTimef() - _connectTime;
-		if( deltaTime > 1.0f ) {			//TODO Parameter - reconnecting time
+		if (deltaTime > 1.0f) {			//TODO Parameter - reconnecting time
 			reconnect();
-		} 
+		}
 	}
 }
 
 //-------------------------------------------------------------------
-bool ofxKuNetworkTcpClient::send( unsigned char *data, int size, int frameNumber )
+bool ofxKuNetworkTcpClient::send(unsigned char *data, int size, int frameNumber)
 {
 	if (!enabled_) return false;
-	update();	
+	update();
 	bool res = connected();
 	//Header
-	if ( res ) {
+	if (res) {
 		ofxKuNetwork_PacketHeader header;
-		header.setup( frameNumber, size, 0, true );
-		res = tcpClient.sendRawBytes( header.buffer, header.bufferSize );
+		header.setup(frameNumber, size, 0, true);
+		res = tcpClient.sendRawBytes(header.buffer, header.bufferSize);
 	}
 	//Data
 	int N = 0;
-	if ( res ) {
-		while ( N < size && res ) {
+	if (res) {
+		while (N < size && res) {
 			int n = size - N;
-			n = min( n, _packetSize );
-			res = tcpClient.sendRawBytes( (char *)data + N, n );
+			n = min(n, _packetSize);
+			res = tcpClient.sendRawBytes((char *)data + N, n);
 			N += n;
 		}
 	}
 
-	if ( !res && connected () ) {		//If sending was failed, then reconnect
+	if (!res && connected()) {		//If sending was failed, then reconnect
 		cout << "Data send error..." << endl;
 		tcpClient.close();
 		_connected = false;
@@ -169,7 +169,7 @@ bool ofxKuNetworkTcpClient::send( unsigned char *data, int size, int frameNumber
 //-------------------------------------------------------------------
 //if true - collect data to buffer if even enabled=false
 //false by default
-void ofxKuNetworkTcpClient::setDataPushMode(bool d) {		
+void ofxKuNetworkTcpClient::setDataPushMode(bool d) {
 	dataPushMode_ = d;
 }
 
@@ -250,15 +250,15 @@ void ofxKuNetworkTcpClient::putPixels(const ofPixels &pix) {
 void ofxKuNetworkTcpClient::putString(const std::string &s)
 {
 	if (!dataPushing()) return;
-	
+
 	string temp = s;
 	char * tab2 = new char[temp.length() + 1];
 	strcpy(tab2, temp.c_str());
 	int n = temp.length();
 	//int n = sizeof(tab2);
 
-	ofLogNotice(__FUNCTION__) << s;
-	//ofLogNotice(__FUNCTION__) << ofToString(buffer_);
+	//ofLogNotice(__FUNCTION__) << s;
+	////ofLogNotice(__FUNCTION__) << ofToString(buffer_);
 
 	//int m = buffer_.size();
 	//buffer_.resize(m + n);
@@ -270,7 +270,7 @@ void ofxKuNetworkTcpClient::putString(const std::string &s)
 	for (int i = 0; i < n; i++) {
 		unsigned char value = tab2[i];
 		putU8Array((unsigned char*)&value, sizeof(value));
-		ofLogNotice(__FUNCTION__) << ofToString(value);
+		//ofLogNotice(__FUNCTION__) << ofToString(value);
 	}
 }
 
@@ -299,7 +299,7 @@ ofxKuNetworkTcpServer::~ofxKuNetworkTcpServer() {
 }
 
 //-------------------------------------------------------------------
-void ofxKuNetworkTcpServer::setup( int port, int packetSize, bool threaded, int maxBufferSize, bool enabled )		
+void ofxKuNetworkTcpServer::setup(int port, int packetSize, bool threaded, int maxBufferSize, bool enabled)
 {
 	enabled_ = enabled;
 	dataParsingMode_ = false;
@@ -313,7 +313,7 @@ void ofxKuNetworkTcpServer::setup( int port, int packetSize, bool threaded, int 
 	_size = 0;
 
 	maxN = maxBufferSize; //1000000;		
-	_buffer.resize( maxN );
+	_buffer.resize(maxN);
 	_N = 0;
 
 	isDataNew_ = false;
@@ -322,10 +322,10 @@ void ofxKuNetworkTcpServer::setup( int port, int packetSize, bool threaded, int 
 	time_received_ = ofGetElapsedTimef();
 
 	if (enabled_) {
-		_data.resize( maxN );
+		_data.resize(maxN);
 		startTCP();
 
-		if ( _threaded ) {
+		if (_threaded) {
 			//startThread( true, false );   //blocking, verbose
 			startThread();
 		}
@@ -346,7 +346,7 @@ void ofxKuNetworkTcpServer::setupForParsingBuffer(unsigned char *buffer, int siz
 
 	_size = size;
 
-	maxN = _size;		
+	maxN = _size;
 	_N = 0;
 
 	bufferSize_ = _size;
@@ -371,7 +371,7 @@ void ofxKuNetworkTcpServer::startTCP()
 	bool blocking = true;
 	TCP.setup(_port, blocking);
 	int timeoutReceiveSec = 1;
-	TCP.TCPServerRef().SetTimeoutReceive( timeoutReceiveSec );	
+	TCP.TCPServerRef().SetTimeoutReceive(timeoutReceiveSec);
 }
 
 //-------------------------------------------------------------------
@@ -380,7 +380,7 @@ void ofxKuNetworkTcpServer::close()
 	if (!enabled_) return;
 	//disconnectAll();			//TODO for some reason it don't works, if connection is valid, "waitForThread" wait infinity time.
 
-	if ( _threaded ) {
+	if (_threaded) {
 		long wait_ms = 10000;	//WARNING - is not closed, then can be crash!
 		waitForThread(true, wait_ms);
 	}
@@ -388,7 +388,7 @@ void ofxKuNetworkTcpServer::close()
 }
 
 //-------------------------------------------------------------------
-void ofxKuNetworkTcpServer::restart()	
+void ofxKuNetworkTcpServer::restart()
 {
 	if (!enabled_) return;
 	_wantRestart = true;
@@ -398,10 +398,10 @@ void ofxKuNetworkTcpServer::restart()
 void ofxKuNetworkTcpServer::threadedFunction()
 {
 	if (!enabled_) return;
-	while( isThreadRunning() != 0 ){
+	while (isThreadRunning() != 0) {
 		//Receive
 		receive0();
-		
+
 		//if not received data for a long time - then wait a little
 		float time = ofGetElapsedTimef();
 		if (TCP.getNumClients() == 0 || time - time_received_ >= 1.0) {	//TODO parameter of waiting
@@ -409,7 +409,7 @@ void ofxKuNetworkTcpServer::threadedFunction()
 		}
 
 		//Restarting - just disconnect all clients
-		if ( _wantRestart ) {
+		if (_wantRestart) {
 			_wantRestart = false;
 			disconnectAll();
 		}
@@ -422,19 +422,19 @@ void ofxKuNetworkTcpServer::threadedFunction()
 void ofxKuNetworkTcpServer::receive()
 {
 	if (!enabled_) return;
-	if ( !_threaded ) {
+	if (!_threaded) {
 		receive0();
 	}
 }
 
 //-------------------------------------------------------------------
 //Shortening buffer to length newLen
-void ofxKuNetworkTcpServer::shiftBuffer( char *buffer, int &len, int newLen )
+void ofxKuNetworkTcpServer::shiftBuffer(char *buffer, int &len, int newLen)
 {
-	if ( newLen < len ) {
+	if (newLen < len) {
 		int start = len - newLen;
-		for (int i=0; i<newLen; i++) {
-			buffer[ i ] = buffer[ i + start ];
+		for (int i = 0; i < newLen; i++) {
+			buffer[i] = buffer[i + start];
 		}
 		len = newLen;
 	}
@@ -445,18 +445,18 @@ void ofxKuNetworkTcpServer::receive0()
 {
 	if (!enabled_) return;
 	char *buffer = &_buffer[0];
-	for(int k = 0; k < TCP.getNumClients(); k++){		
+	for (int k = 0; k < TCP.getNumClients(); k++) {
 		//TODO here is the problem: if several clients sent data, it will be shuffled!
 		//So, need to collect data for each client separately
-		if ( !TCP.isClientConnected(k) ) { 
+		if (!TCP.isClientConnected(k)) {
 			continue;
 		}
 
 		int free = maxN - _N;
-		if ( free > 0 ) {
-			free = min( free, _packetSize );
-			int rec = TCP.receiveRawBytes( k, (char *)(buffer + _N), free ); 
-			if ( rec >= 0 ) {
+		if (free > 0) {
+			free = min(free, _packetSize);
+			int rec = TCP.receiveRawBytes(k, (char *)(buffer + _N), free);
+			if (rec >= 0) {
 				if (rec > 0) {
 					time_received_ = ofGetElapsedTimef();
 
@@ -515,21 +515,21 @@ void ofxKuNetworkTcpServer::receive0()
 			}
 			else {
 				cout << "Network: Receive error - no data" << endl;
-				disconnectClient( k );
+				disconnectClient(k);
 				_N = 0;						//Reset read data
-				return;						
+				return;
 			}
 		}
 	}
 }
 
 //-------------------------------------------------------------------
-void ofxKuNetworkTcpServer::disconnectClient( int id )	//отключить клиента
+void ofxKuNetworkTcpServer::disconnectClient(int id)	//отключить клиента
 {
 	if (!enabled_) return;
 	cout << "\tDisconnect client " << id + 1 << endl;
-	if ( id < TCP.getNumClients() ) {
-		TCP.disconnectClient( id );
+	if (id < TCP.getNumClients()) {
+		TCP.disconnectClient(id);
 	}
 }
 
@@ -568,7 +568,7 @@ bool ofxKuNetworkTcpServer::isDataNew() {
 //-------------------------------------------------------------------
 bool ofxKuNetworkTcpServer::getU8Array(unsigned char *v, int n) {
 	if (!parsing()) return false;
-	return reader_.getU8Array(v, n);	
+	return reader_.getU8Array(v, n);
 }
 
 //-------------------------------------------------------------------
@@ -611,8 +611,8 @@ ofPixels ofxKuNetworkTcpServer::getPixels() {
 	int channels = getInt();
 	vector<unsigned char> data;
 	if (getU8Vector(data)) {
-		if (data.size() == w*h*channels) {
-			pix.setFromPixels(&data[0], w, h, channels);	
+		if (data.size() == w * h*channels) {
+			pix.setFromPixels(&data[0], w, h, channels);
 		}
 	}
 
@@ -625,12 +625,34 @@ std::string ofxKuNetworkTcpServer::getString() {
 	std::string s0;
 	if (!parsing()) return s0;
 
+
+	////unsigned char *tab2[1024];
+	//unsigned char *tab2;
+	//int m = buffer_.size();
+	//reader_.getU8Array(tab2, m);//TODO: error here on receive?
+	//
+	//std::string ss(reinterpret_cast<char*>(tab2));
+	//ofLogNotice(__FUNCTION__) << ofToString(ss);
+	//return ss;
+
+	//Run-Time Check Failure #3 - The variable 'tab2' is being used without being initialized.
+	//unsigned char *tab2[1024];
 	unsigned char *tab2;
 	int m = buffer_.size();
-	reader_.getU8Array(tab2, m);
-	
-	std::string ss(reinterpret_cast<char*>(tab2));
-	ofLogNotice(__FUNCTION__) << ofToString(ss);
+	if (reader_.getU8Array(tab2, m))//TODO: error here on receive?
+	{
+		std::string ss(reinterpret_cast<char*>(tab2));
+		ofLogNotice(__FUNCTION__) << ofToString(ss);
+			return ss;
+	}
 
-	return ss;
+
+	////int v;
+	//unsigned char tab2;
+	////unsigned char *tab2;
+	//if (getU8Array((unsigned char*)&tab2, sizeof(tab2))) {
+	//	std::string ss(reinterpret_cast<char*>(tab2));
+	//	//ofLogNotice(__FUNCTION__) << ofToString(ss);
+	//	return ss;
+	//}
 }
