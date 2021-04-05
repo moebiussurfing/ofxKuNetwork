@@ -3,6 +3,10 @@
 #include "ofMain.h"
 #include "ofxKuNetwork.h"
 
+#include <algorithm>
+#include <iostream>
+
+
 class ofApp : public ofBaseApp {
 
 public:

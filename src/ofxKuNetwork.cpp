@@ -186,6 +186,9 @@ void ofxKuNetworkTcpClient::clearBuffer() {
 
 //-------------------------------------------------------------------
 void ofxKuNetworkTcpClient::putU8Array(const unsigned char *v, int n) {
+	ofLogNotice(__FUNCTION__) << v;
+	ofLogNotice(__FUNCTION__) << n;
+
 	if (!dataPushing()) return;
 	int m = buffer_.size();
 	buffer_.resize(m + n);
@@ -251,27 +254,37 @@ void ofxKuNetworkTcpClient::putString(const std::string &s)
 {
 	if (!dataPushing()) return;
 
-	string temp = s;
-	char * tab2 = new char[temp.length() + 1];
-	strcpy(tab2, temp.c_str());
-	int n = temp.length();
-	//int n = sizeof(tab2);
 
-	//ofLogNotice(__FUNCTION__) << s;
-	////ofLogNotice(__FUNCTION__) << ofToString(buffer_);
-
-	//int m = buffer_.size();
-	//buffer_.resize(m + n);
-	//for (int i = 0; i < n; i++) {
-	//	buffer_[m + i] = tab2[i];
+	// ERROR: length of string differs from char arrays..
+	//for (int i = 0; i < s.length(); i++) 
+	//{
+	//	unsigned char value = (unsigned char)s[i];
+	//	putU8Array((unsigned char*)&value, sizeof(value));
+	//	ofLogNotice(__FUNCTION__) << ofToString(value);
 	//}
 
 
-	for (int i = 0; i < n; i++) {
-		unsigned char value = tab2[i];
-		putU8Array((unsigned char*)&value, sizeof(value));
-		//ofLogNotice(__FUNCTION__) << ofToString(value);
-	}
+	char * tab2 = new char[s.length() + 1];
+	strcpy(tab2, s.c_str());
+	int n = s.length();
+	//int n = sizeof(tab2);//not works
+	putU8Array((unsigned char*)&tab2, sizeof(tab2));
+
+	////ofLogNotice(__FUNCTION__) << s;
+	//////ofLogNotice(__FUNCTION__) << ofToString(buffer_);
+
+	////int m = buffer_.size();
+	////buffer_.resize(m + n);
+	////for (int i = 0; i < n; i++) {
+	////	buffer_[m + i] = tab2[i];
+	////}
+
+
+	//for (int i = 0; i < n; i++) {
+	//	unsigned char value = tab2[i];
+	//	putU8Array((unsigned char*)&value, sizeof(value));
+	//	//ofLogNotice(__FUNCTION__) << ofToString(value);
+	//}
 }
 
 //-------------------------------------------------------------------
