@@ -113,12 +113,12 @@ void ofxKuNetworkTcpClient::close()
 void ofxKuNetworkTcpClient::reconnect()
 {
 	if (!enabled_) return;
-	cout << "Reconnect sender " << _addr << ", port " << _port << endl;
+	ofLogNotice(__FUNCTION__) << "Reconnect sender " << _addr << ", port " << _port ;
 	bool blocking = true;
 	_connected = tcpClient.setup(_addr, _port, blocking);
 	_connectTime = ofGetElapsedTimef();
-	if (_connected) { cout << " ok" << endl; }
-	else { cout << " failed" << endl; }
+	if (_connected) { ofLogNotice(__FUNCTION__) << " ok" ; }
+	else { ofLogNotice(__FUNCTION__) << " failed" ; }
 }
 
 //-------------------------------------------------------------------
@@ -158,7 +158,7 @@ bool ofxKuNetworkTcpClient::send(unsigned char *data, int size, int frameNumber)
 	}
 
 	if (!res && connected()) {		//If sending was failed, then reconnect
-		cout << "Data send error..." << endl;
+		ofLogNotice(__FUNCTION__) << "Data send error..." ;
 		tcpClient.close();
 		_connected = false;
 	}
@@ -263,13 +263,24 @@ void ofxKuNetworkTcpClient::putString(const std::string &s)
 	//	ofLogNotice(__FUNCTION__) << ofToString(value);
 	//}
 
-
-	char * tab2 = new char[s.length() + 1];
-	strcpy(tab2, s.c_str());
-	int n = s.length();
+	//// not working
 	//int n = sizeof(tab2);//not works
-	putU8Array((unsigned char*)&tab2, sizeof(tab2));
+	//int n =  s.length();
+	//char * tab2 = new char[s.length() + 1];
+	//strcpy(tab2, s.c_str());
+	//putU8Array((unsigned char*)&tab2, sizeof(tab2));
 
+	//// test
+	//unsigned char uCharArr[1024];
+	//std::copy(s.begin(), s.end(), uCharArr);
+	//uCharArr[s.length()] = 0;
+	//putU8Array((unsigned char*)&uCharArr, sizeof(uCharArr));
+
+	// vectors
+	std::vector<unsigned char> v (s.begin(), s.end());
+	putU8Vector(v);
+
+		
 	////ofLogNotice(__FUNCTION__) << s;
 	//////ofLogNotice(__FUNCTION__) << ofToString(buffer_);
 
@@ -380,7 +391,7 @@ bool ofxKuNetworkTcpServer::parsing() {
 void ofxKuNetworkTcpServer::startTCP()
 {
 	if (!enabled_) return;
-	cout << "ofxKuNetworkTcpServer - start receiver, port " << _port << endl;
+	ofLogNotice(__FUNCTION__) << "ofxKuNetworkTcpServer - start receiver, port " << _port ;
 	bool blocking = true;
 	TCP.setup(_port, blocking);
 	int timeoutReceiveSec = 1;
@@ -474,13 +485,13 @@ void ofxKuNetworkTcpServer::receive0()
 					time_received_ = ofGetElapsedTimef();
 
 					_N += rec;
-					//cout << "rec " << rec << endl;
+					//ofLogNotice(__FUNCTION__) << "rec " << rec ;
 					//Searching header
 					ofxKuNetwork_PacketHeader header;
 					int headerPos = header.findHeader((char *)buffer, _N);
 					if (headerPos >= 0) {
 
-						//cout << "reading frame " << header.frame << endl;
+						//ofLogNotice(__FUNCTION__) << "reading frame " << header.frame ;
 
 						//Header is found, now receive data
 
@@ -502,7 +513,7 @@ void ofxKuNetworkTcpServer::receive0()
 							else {
 								float time = ofGetElapsedTimef();
 								if (time >= lastTime + 1.0) {		//TODO Parameter - connection is lost
-									cout << "Reading data error frame " << header.frame << endl;
+									ofLogNotice(__FUNCTION__) << "Reading data error frame " << header.frame ;
 									break;
 								}
 							}
@@ -514,7 +525,7 @@ void ofxKuNetworkTcpServer::receive0()
 							_frame = header.frame;
 							_size = header.size;
 							isDataNew_ = true;
-							//cout << _frame << endl;
+							//ofLogNotice(__FUNCTION__) << _frame ;
 							if (_threaded) unlock();
 						}
 					}
@@ -527,7 +538,7 @@ void ofxKuNetworkTcpServer::receive0()
 
 			}
 			else {
-				cout << "Network: Receive error - no data" << endl;
+				ofLogNotice(__FUNCTION__) << "Network: Receive error - no data" ;
 				disconnectClient(k);
 				_N = 0;						//Reset read data
 				return;
@@ -540,7 +551,7 @@ void ofxKuNetworkTcpServer::receive0()
 void ofxKuNetworkTcpServer::disconnectClient(int id)	//отключить клиента
 {
 	if (!enabled_) return;
-	cout << "\tDisconnect client " << id + 1 << endl;
+	ofLogNotice(__FUNCTION__) << "\tDisconnect client " << id + 1 ;
 	if (id < TCP.getNumClients()) {
 		TCP.disconnectClient(id);
 	}
@@ -548,7 +559,7 @@ void ofxKuNetworkTcpServer::disconnectClient(int id)	//отключить кли
 
 //-------------------------------------------------------------------
 void ofxKuNetworkTcpServer::disconnectAll() {
-	cout << "\tDisconnecting all clients" << endl;
+	ofLogNotice(__FUNCTION__) << "\tDisconnecting all clients" ;
 	TCP.disconnectAllClients();
 	//for (int k = 0; k < TCP.getNumClients(); k++) {
 	//	if (TCP.isClientConnected(k)) {
@@ -635,37 +646,18 @@ ofPixels ofxKuNetworkTcpServer::getPixels() {
 //-------------------------------------------------------------------
 std::string ofxKuNetworkTcpServer::getString() {
 
-	std::string s0;
-	if (!parsing()) return s0;
+	std::string s;
+	if (!parsing()) return s;
 
-
-	////unsigned char *tab2[1024];
-	//unsigned char *tab2;
-	//int m = buffer_.size();
-	//reader_.getU8Array(tab2, m);//TODO: error here on receive?
-	//
-	//std::string ss(reinterpret_cast<char*>(tab2));
-	//ofLogNotice(__FUNCTION__) << ofToString(ss);
-	//return ss;
-
-	//Run-Time Check Failure #3 - The variable 'tab2' is being used without being initialized.
-	//unsigned char *tab2[1024];
-	unsigned char *tab2;
-	int m = buffer_.size();
-	if (reader_.getU8Array(tab2, m))//TODO: error here on receive?
+	vector<unsigned char> v;
+	if (getU8Vector(v)) 
 	{
-		std::string ss(reinterpret_cast<char*>(tab2));
-		ofLogNotice(__FUNCTION__) << ofToString(ss);
-			return ss;
+		//if (data.size() == w * h*channels) 
+		{
+			//pix.setFromPixels(&data[0], w, h, channels);
+			std::string sc(v.begin(), v.end());
+
+			return sc;
+		}
 	}
-
-
-	////int v;
-	//unsigned char tab2;
-	////unsigned char *tab2;
-	//if (getU8Array((unsigned char*)&tab2, sizeof(tab2))) {
-	//	std::string ss(reinterpret_cast<char*>(tab2));
-	//	//ofLogNotice(__FUNCTION__) << ofToString(ss);
-	//	return ss;
-	//}
 }
